@@ -1,89 +1,69 @@
-use std::fmt;
-#[derive(Debug, PartialEq)]
-pub struct Node<T> {
+
+#[derive(Debug)]
+pub struct LinkedNode<T> {
     data: T,
-    next: Option<Box<Node<T>>>,
+    next: Option<Box<LinkedNode<T>>>,
 }
 
+#[derive(Debug)]
 pub struct LinkedList<T> {
-    head: Option<Box<Node<T>>>,
+    head: Option<Box<LinkedNode<T>>>,
+}
+
+impl<T> LinkedNode<T> {
+    pub fn new(value: T) -> Self {
+        LinkedNode {
+            data: value,
+            next: None,
+        }
+    }
 }
 
 impl<T> LinkedList<T> {
-    pub fn new() -> Self {
-        LinkedList { head: None }
-    }
-
-    pub fn new_with_head_node(data: T) -> Self {
+    pub fn new(value: T) -> Self {
         LinkedList {
-            head: Some(Box::new(Node { data, next: None })),
+            head: Some(Box::new(LinkedNode::new(value))),
         }
     }
-    // 创建一个新的结点，将新结点的 next 指向当前链表的 head 结点，然后将链表的 head 指向新结点
-    pub fn insert_head(&mut self, data: T) {
-        let new_node = Node {
-            data,
-            next: self.head.take(),
-        };
-        self.head = Some(Box::new(new_node));
-    }
 
-    pub fn insert_head_with_head_node(&mut self, data: T) {
-
-        let new_node = Node {
-            data,
+    // insert node in this linked list head
+    pub fn insert_head(&mut self, value: T) {
+        let new_node = LinkedNode {
+            data: value,
             next: self.head.as_mut().unwrap().next.take(),
         };
-        
-        self.head.as_mut().unwrap().next = Some(Box::new(new_node));
 
-    }
-    // 遍历链表，直到找到最后一个结点，然后将新结点的 next 指向 None，将最后一个结点的 next 指向新结点
-    pub fn insert_tail(&mut self, data: T) {
-        let mut current = &mut self.head;
-        while let Some(node) = current {
-            current = &mut node.next;
-        }
-        *current = Some(Box::new(Node { data, next: None }));
+        self.head.as_mut().unwrap().next = Some(Box::new(new_node));
     }
 }
 
-impl<T: fmt::Display> fmt::Display for LinkedList<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl<T: std::fmt::Display> std::fmt::Display for LinkedList<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "head -> ")?;
-        let mut current = &self.head;
 
+        let mut current = &self.head;
         while let Some(node) = current {
             write!(f, "[ {} | * ] -> ", node.data)?;
             current = &node.next;
         }
-
-        write!(f, "[ None ]")?;
-        Ok(())
+        write!(f, "None")
     }
 }
 
+// Unit tests
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
-    use crate::LinkedList;
+
     #[test]
-    fn test_linked_list_creation() {
-        let list: LinkedList<i32> = LinkedList::new();
-        assert_eq!(list.head, None);
+    fn test_linked_node() {
+        let node = LinkedNode::new(1);
+        assert_eq!(node.data, 1);
     }
 
     #[test]
-    fn test_linked_list_creation_with_head_node() {
-        let list: LinkedList<i32> = LinkedList::new_with_head_node(10);
-        assert_eq!(
-            list.head,
-            Some(Box::new(Node {
-                data: 10,
-                next: None
-            }))
-        );
-
-        println!("{}", list);
+    fn test_linked_list() {
+        let list = LinkedList::new(1);
+        assert_eq!(list.head.as_ref().unwrap().data, 1);
     }
 }
